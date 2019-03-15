@@ -1,0 +1,10 @@
+{
+  "appId": "com.rogong.ionic-angular",
+  "appName": "firstProject",
+  "bundledWebRuntime": false,
+  "webDir": "www",
+  "server": {
+    "url": "http://192.168.86.20:8100",
+    "originalUrl": "http://192.168.86.20:8100"
+  }
+}
