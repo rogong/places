@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Place } from './place.model';
 import { PlacesService } from './places.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-places',
@@ -9,11 +10,15 @@ import { PlacesService } from './places.service';
 })
 export class PlacesPage implements OnInit {
    places: Place[];
+   placesSub: Subscription;
 
   constructor(private placesServices: PlacesService) { }
 
   ngOnInit() {
-    this.places = this.placesServices.places;
+    this.placesSub = this.placesServices.places
+    .subscribe(places => {
+      this.places = places;
+    });
   }
 
 }

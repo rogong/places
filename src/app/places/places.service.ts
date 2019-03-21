@@ -1,55 +1,126 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { take,  map, tap, delay } from 'rxjs/operators';
+
 import { Place } from './place.model';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlacesService {
-private _places: Place[] = [
+private _places = new BehaviorSubject<Place[]>([
   new Place(
     'p1',
     'Yankari National Park',
     'In the heart of Lagos City',
-    'https://lh6.googleusercontent.com/--Wu6vSB_mDo/WV0YQej59XI/AAAAAAAABb0/5v68z5qiTFssjZDZWEdA548n5E2ySvwAQCLIBGAYYCw/w100-h134-n-k-no/',
-    500.67
+    '../../assets/pl.jpg',
+    500.67,
+    new Date('2019-01-01'),
+    new Date('2019-12-31'),
+    'abc'
     ),
     new Place(
       'p2',
       'Lekki Conservation Centre',
       'In the heart of Lagos City',
-      'https://lh3.googleusercontent.com/-Q16qljHw5r8/Wqu7fWAzPgI/AAAAAAAADlM/WlwYkUCHSM48Y-FTM-QMs2d6S2X21SFLACLIBGAYYCw/w100-h134-n-k-no/',
-      500.67
+      '../../assets/pl.jpg',
+      500.67,
+      new Date('2019-01-01'),
+    new Date('2019-12-31'),
+    'abc'
       ),
       new Place(
         'p3',
         'Zuma Rock',
         'In the heart of Lagos City',
-        'https://lh4.googleusercontent.com/proxy/_Zv8UiZ613P7GsVFnelmB9Sn1W0XI1geptdla5o4Tx333uqZZjgtWqDqindDqLn74A4MBQ6akmrLjc-uB1RwxM5TDj1VnYLoPuKS_QtPTNfZDGsvYQp9fm09PxE6wx2l0LQ6eZvhfJtmbteCA4WSsGeDdLv3VJ_yfTI=w100-h134-n-k-no',
-        500.67
+        '../../assets/pl2.jpg',
+        500.67,
+        new Date('2019-01-01'),
+        new Date('2019-12-31'),
+        'abc'
         ),
         new Place(
           'p4',
           'Olumo Rock',
           'In the heart of Lagos City',
-          'https://lh4.googleusercontent.com/-KhhJrJaPRC4/WndGih4yTYI/AAAAAAAAT5A/ykk2PmM46BUN4KCyuW0KFOr-KjeDbhOsACLIBGAYYCw/w100-h134-n-k-no/',
-          500.67
+          '../../assets/pl3.jpg',
+          500.67,
+          new Date('2019-01-01'),
+          new Date('2019-12-31'),
+          'abc'
           )
           ,
         new Place(
           'p4',
           'Osun-Osogbo',
           'In the heart of Lagos City',
-          'https://lh4.googleusercontent.com/-GyflTYWt_oU/W-_GmkfS9VI/AAAAAAAASqU/2_lt9rN7gOASu-SP4TbjZWiP7OEHLEBSgCLIBGAYYCw/w100-h134-n-k-no/',
-          500.67
+          '../../assets/pl.jpg',
+          500.67,
+          new Date('2019-01-01'),
+          new Date('2019-12-31'),
+          'abc'
           )
-];
+]);
 
 get places() {
-  return [...this._places];
+  return this._places.asObservable();
 }
-  constructor() { }
+  constructor(private authServices: AuthService) { }
 
   getPlace(id: string) {
-    return { ...this._places.find(p => p.id === id)};
+    return this.places.pipe(
+      take(1),
+      map(places => {
+      return {...places.find(p => p.id === id)};
+    }));
+  }
+
+  addPlace(
+    title: string,
+    description: string,
+    price: number,
+    dateFrom: Date,
+    dateTo: Date
+    ) {
+  const newPlace = new Place(
+    Math.random().toString(),
+    title,
+    description,
+    '../../assets/pl.jpg',
+    price,
+    dateFrom,
+    dateTo,
+    this.authServices.userId
+    );
+    return this._places.pipe(
+     take(1),
+     delay(1000),
+     tap(places => {
+        this._places.next(places.concat(newPlace));
+    }));
+  }
+
+  updatePlace(placeId: string, title: string, description: string) {
+    return this.places.pipe(
+      take(1),
+      delay(1000),
+      tap(places => {
+        const updatedPlaceIndex = places.findIndex(pl => pl.id === placeId);
+        const updatedPlaces = [...places];
+        const oldPlace = updatedPlaces[updatedPlaceIndex];
+        updatedPlaces[updatedPlaceIndex] = new Place(
+          oldPlace.id,
+          title,
+          description,
+          oldPlace.imageUrl,
+          oldPlace.price,
+          oldPlace.availableFrom,
+          oldPlace.availableTo,
+          oldPlace.userId
+        );
+        this._places.next(updatedPlaces);
+      })
+    );
   }
 }
